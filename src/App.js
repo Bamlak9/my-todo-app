@@ -142,7 +142,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <h1>✅ Todo List</h1>
+      <h1>✅ My Awesome Todo App</h1>
 
       {/* INPUT FORM */}
       <div className="todo-form">
