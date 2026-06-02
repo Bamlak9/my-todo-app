@@ -75,20 +75,12 @@ function App() {
       ),
     );
   };
-
   // FUNCTION TO DELETE A TODO
   const deleteTodo = (id) => {
     // Filter out the todo with matching id
     setTodos(todos.filter((todo) => todo.id !== id));
   };
 
-  // Add after deleteTodo function
-  const editTodo = (id, newText) => {
-    setTodos(
-      todos.map((todo) => (todo.id === id ? { ...todo, text: newText } : todo)),
-    );
-  };
-  // ADD THESE THREE FUNCTIONS
   // Start editing a todo
   const startEditing = (id, currentText) => {
     setEditingId(id);
@@ -301,7 +293,7 @@ function App() {
                   className={`todo-text ${todo.completed ? "completed" : ""}`}
                   onDoubleClick={() => startEditing(todo.id, todo.text)}
                 >
-                  {todo.text}
+                  {highlightText(todo.text, searchTerm)}
                 </span>
 
                 {/* NEW: Priority Selector Dropdown */}
