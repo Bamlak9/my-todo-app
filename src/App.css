@@ -225,3 +225,150 @@ h1 {
   color: #1976d2;
   text-align: center;
 }
+/* Priority Color Coding */
+.priority-high {
+  border-left: 5px solid #ff4444 !important;
+  background: linear-gradient(90deg, #fff5f5 0%, #f9f9f9 100%);
+}
+
+.priority-medium {
+  border-left: 5px solid #ffbb33 !important;
+  background: linear-gradient(90deg, #fffbf0 0%, #f9f9f9 100%);
+}
+
+.priority-low {
+  border-left: 5px solid #00c851 !important;
+  background: linear-gradient(90deg, #f0fff4 0%, #f9f9f9 100%);
+}
+
+/* Priority Select Dropdown */
+.priority-select {
+  padding: 6px 12px;
+  margin: 0 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.priority-select:hover {
+  border-color: #667eea;
+}
+
+.priority-select option {
+  padding: 8px;
+}
+
+/* Priority Filter Buttons */
+.priority-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-weight: bold;
+  color: #666;
+  margin-right: 5px;
+}
+
+.priority-filter-btn {
+  padding: 6px 12px;
+  border: 2px solid #e0e0e0;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
+.priority-filter-btn:hover {
+  transform: translateY(-2px);
+}
+
+.priority-filter-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.priority-filter-btn.high.active {
+  background: #ff4444;
+  border-color: #ff4444;
+}
+
+.priority-filter-btn.medium.active {
+  background: #ffbb33;
+  border-color: #ffbb33;
+  color: #333;
+}
+
+.priority-filter-btn.low.active {
+  background: #00c851;
+  border-color: #00c851;
+}
+
+/* Make todo item layout work with priority selector */
+.todo-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: #f9f9f9;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  transition: all 0.3s;
+  gap: 10px;
+}
+
+.todo-text {
+  flex: 1;
+  font-size: 16px;
+  color: #333;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 600px) {
+  .todo-item {
+    flex-wrap: wrap;
+  }
+
+  .priority-select {
+    order: 3;
+    margin-left: auto;
+  }
+
+  .delete-btn {
+    order: 4;
+  }
+
+  .priority-filters {
+    justify-content: center;
+  }
+}
+.priority-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+  background: #f0f0f0;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.priority-stats span:first-child {
+  color: #ff4444;
+}
+.priority-stats span:nth-child(2) {
+  color: #ffbb33;
+}
+.priority-stats span:last-child {
+  color: #00c851;
+}

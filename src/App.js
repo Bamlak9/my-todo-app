@@ -12,6 +12,7 @@ function App() {
   const [editText, setEditText] = useState(""); // What text is being typed
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("all"); // NEW: filter by priority
 
   // LOAD DATA FROM LOCALSTORAGE WHEN APP FIRST OPENS
   // useEffect runs code at specific times. Empty [] means "run once when component mounts"
@@ -38,22 +39,33 @@ function App() {
   }, [debouncedSearch]);
   // FUNCTION TO ADD A NEW TODO
   const addTodo = () => {
-    // Don't add empty todos
     if (inputValue.trim() === "") return;
 
-    // Create new todo object
     const newTodo = {
-      id: Date.now(), // Unique ID using current timestamp
+      id: Date.now(),
       text: inputValue,
-      completed: false, // Not done yet
-      createdAt: new Date().toISOString(), // When it was created
+      completed: false,
+      priority: "medium", // NEW: default priority (high, medium, low)
+      createdAt: new Date().toISOString(),
     };
 
-    // Add to beginning of todos array
     setTodos([newTodo, ...todos]);
-    setInputValue(""); // Clear input field
+    setInputValue("");
+  };
+  const editTodo = (id, newText) => {
+    setTodos(
+      todos.map((todo) => (todo.id === id ? { ...todo, text: newText } : todo)),
+    );
   };
 
+  // ADD THIS NEW FUNCTION
+  const updatePriority = (id, newPriority) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, priority: newPriority } : todo,
+      ),
+    );
+  };
   // FUNCTION TO TOGGLE TODO COMPLETION (check/uncheck)
   const toggleTodo = (id) => {
     // Map through all todos, if id matches, toggle completed property
@@ -114,12 +126,23 @@ function App() {
       filtered = todos.filter((todo) => todo.completed);
     }
 
-    // Then filter by search term (if searchTerm is not empty)
+    // Then filter by priority
+    if (priorityFilter !== "all") {
+      filtered = filtered.filter((todo) => todo.priority === priorityFilter);
+    }
+
+    // Then filter by search term
     if (searchTerm.trim() !== "") {
       filtered = filtered.filter((todo) =>
         todo.text.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
+
+    // Sort by priority (High first, then Medium, then Low)
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
+    filtered.sort(
+      (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority],
+    );
 
     return filtered;
   };
@@ -164,6 +187,16 @@ function App() {
         <span>📊 Total: {totalTodos}</span>
         <span>✅ Completed: {completedTodos}</span>
         <span>⏳ Active: {activeTodos}</span>
+      </div>
+      {/* NEW: Priority Stats */}
+      <div className="priority-stats">
+        <span>
+          🔴 High: {todos.filter((t) => t.priority === "high").length}
+        </span>
+        <span>
+          🟡 Medium: {todos.filter((t) => t.priority === "medium").length}
+        </span>
+        <span>🟢 Low: {todos.filter((t) => t.priority === "low").length}</span>
       </div>
       {/* SEARCH BOX SECTION */}
       <div className="search-section">
@@ -210,11 +243,38 @@ function App() {
           Completed
         </button>
       </div>
-
+      {/* NEW: Priority Filter Section */}
+      <div className="priority-filters">
+        <span className="filter-label">Priority: </span>
+        <button
+          className={`priority-filter-btn ${priorityFilter === "all" ? "active" : ""}`}
+          onClick={() => setPriorityFilter("all")}
+        >
+          All
+        </button>
+        <button
+          className={`priority-filter-btn high ${priorityFilter === "high" ? "active" : ""}`}
+          onClick={() => setPriorityFilter("high")}
+        >
+          🔴 High
+        </button>
+        <button
+          className={`priority-filter-btn medium ${priorityFilter === "medium" ? "active" : ""}`}
+          onClick={() => setPriorityFilter("medium")}
+        >
+          🟡 Medium
+        </button>
+        <button
+          className={`priority-filter-btn low ${priorityFilter === "low" ? "active" : ""}`}
+          onClick={() => setPriorityFilter("low")}
+        >
+          🟢 Low
+        </button>
+      </div>
       {/* TODO LIST */}
       <ul className="todo-list">
         {getFilteredTodos().map((todo) => (
-          <li key={todo.id} className="todo-item">
+          <li key={todo.id} className={`todo-item priority-${todo.priority}`}>
             <input
               type="checkbox"
               className="todo-checkbox"
@@ -222,9 +282,7 @@ function App() {
               onChange={() => toggleTodo(todo.id)}
             />
 
-            {/* Check if this todo is being edited */}
             {editingId === todo.id ? (
-              // EDIT MODE - show input field
               <input
                 type="text"
                 className="todo-edit-input"
@@ -238,13 +296,26 @@ function App() {
                 autoFocus
               />
             ) : (
-              // NORMAL MODE - show text
-              <span
-                className={`todo-text ${todo.completed ? "completed" : ""}`}
-                onDoubleClick={() => startEditing(todo.id, todo.text)}
-              >
-                {highlightText(todo.text, searchTerm)}
-              </span>
+              <>
+                <span
+                  className={`todo-text ${todo.completed ? "completed" : ""}`}
+                  onDoubleClick={() => startEditing(todo.id, todo.text)}
+                >
+                  {todo.text}
+                </span>
+
+                {/* NEW: Priority Selector Dropdown */}
+                <select
+                  className="priority-select"
+                  value={todo.priority}
+                  onChange={(e) => updatePriority(todo.id, e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <option value="high">🔴 High</option>
+                  <option value="medium">🟡 Medium</option>
+                  <option value="low">🟢 Low</option>
+                </select>
+              </>
             )}
 
             <button className="delete-btn" onClick={() => deleteTodo(todo.id)}>
