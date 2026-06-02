@@ -372,3 +372,10 @@ h1 {
 .priority-stats span:last-child {
   color: #00c851;
 }
+/* Highlight search matches */
+mark {
+  background-color: #ffeb3b;
+  padding: 0 2px;
+  border-radius: 3px;
+  color: #333;
+}
