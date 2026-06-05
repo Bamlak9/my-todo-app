@@ -1,6 +1,8 @@
 // src/App.js - Main application component
 import React, { useState, useEffect } from "react";
 import "./App.css";
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 function App() {
   // STATE MANAGEMENT
@@ -13,6 +15,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("all"); // NEW: filter by priority
+  const [dueDateFilter, setDueDateFilter] = useState('all'); // NEW: all, today, week, overdue
 
   // LOAD DATA FROM LOCALSTORAGE WHEN APP FIRST OPENS
   // useEffect runs code at specific times. Empty [] means "run once when component mounts"
@@ -38,20 +41,21 @@ function App() {
     return () => clearTimeout(timer);
   }, [debouncedSearch]);
   // FUNCTION TO ADD A NEW TODO
-  const addTodo = () => {
-    if (inputValue.trim() === "") return;
-
-    const newTodo = {
-      id: Date.now(),
-      text: inputValue,
-      completed: false,
-      priority: "medium", // NEW: default priority (high, medium, low)
-      createdAt: new Date().toISOString(),
-    };
-
-    setTodos([newTodo, ...todos]);
-    setInputValue("");
+ const addTodo = () => {
+  if (inputValue.trim() === '') return;
+  
+  const newTodo = {
+    id: Date.now(),
+    text: inputValue,
+    completed: false,
+    priority: 'medium',
+    dueDate: null, // NEW: due date (null = no due date)
+    createdAt: new Date().toISOString(),
   };
+  
+  setTodos([newTodo, ...todos]);
+  setInputValue('');
+};
   const editTodo = (id, newText) => {
     setTodos(
       todos.map((todo) => (todo.id === id ? { ...todo, text: newText } : todo)),
@@ -66,6 +70,11 @@ function App() {
       ),
     );
   };
+  const updateDueDate = (id, date) => {
+  setTodos(todos.map(todo =>
+    todo.id === id ? { ...todo, dueDate: date } : todo
+  ));
+};
   // FUNCTION TO TOGGLE TODO COMPLETION (check/uncheck)
   const toggleTodo = (id) => {
     // Map through all todos, if id matches, toggle completed property
@@ -107,28 +116,84 @@ function App() {
     // Keep only todos that are NOT completed
     setTodos(todos.filter((todo) => !todo.completed));
   };
+// Check if a date is today
+const isToday = (date) => {
+  if (!date) return false;
+  const today = new Date();
+  return date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear();
+};
 
+// Check if a date is within next 7 days
+const isThisWeek = (date) => {
+  if (!date) return false;
+  const today = new Date();
+  const weekFromNow = new Date();
+  weekFromNow.setDate(today.getDate() + 7);
+  return date >= today && date <= weekFromNow;
+};
+
+// Check if a date is overdue (past due and not completed)
+const isOverdue = (date, completed) => {
+  if (!date || completed) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return date < today;
+};
+
+// Format date for display
+const formatDate = (date) => {
+  if (!date) return 'No date';
+  return date.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric',
+    year: 'numeric'
+  });
+};
   // FILTER TODOS BASED ON CURRENT FILTER
   const getFilteredTodos = () => {
-    // First filter by status (active/completed/all)
-    let filtered = todos;
-    if (filter === "active") {
-      filtered = todos.filter((todo) => !todo.completed);
-    } else if (filter === "completed") {
-      filtered = todos.filter((todo) => todo.completed);
-    }
-
-    // Then filter by priority
-    if (priorityFilter !== "all") {
-      filtered = filtered.filter((todo) => todo.priority === priorityFilter);
-    }
-
-    // Then filter by search term
-    if (searchTerm.trim() !== "") {
-      filtered = filtered.filter((todo) =>
-        todo.text.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
-    }
+  let filtered = todos;
+  
+  // Filter by status
+  if (filter === 'active') {
+    filtered = filtered.filter(todo => !todo.completed);
+  } else if (filter === 'completed') {
+    filtered = filtered.filter(todo => todo.completed);
+  }
+  
+  // Filter by priority
+  if (priorityFilter !== 'all') {
+    filtered = filtered.filter(todo => todo.priority === priorityFilter);
+  }
+  
+  // NEW: Filter by due date
+  if (dueDateFilter === 'today') {
+    filtered = filtered.filter(todo => isToday(todo.dueDate));
+  } else if (dueDateFilter === 'week') {
+    filtered = filtered.filter(todo => isThisWeek(todo.dueDate));
+  } else if (dueDateFilter === 'overdue') {
+    filtered = filtered.filter(todo => isOverdue(todo.dueDate, todo.completed));
+  }
+  
+  // Filter by search term
+  if (searchTerm.trim() !== '') {
+    filtered = filtered.filter(todo =>
+      todo.text.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
+  
+  // Sort by due date (closest first)
+  const sorted = [...filtered].sort((a, b) => {
+    // No due date goes to bottom
+    if (!a.dueDate && !b.dueDate) return 0;
+    if (!a.dueDate) return 1;
+    if (!b.dueDate) return -1;
+    return a.dueDate - b.dueDate;
+  });
+  
+  return sorted;
+};
 
     // Sort by priority (High first, then Medium, then Low)
     const priorityOrder = { high: 0, medium: 1, low: 2 };
@@ -190,6 +255,11 @@ function App() {
         </span>
         <span>🟢 Low: {todos.filter((t) => t.priority === "low").length}</span>
       </div>
+      <div className="due-date-stats">
+  <span>📅 With due date: {todos.filter(t => t.dueDate).length}</span>
+  <span>⚠️ Overdue: {todos.filter(t => isOverdue(t.dueDate, t.completed)).length}</span>
+  <span>📆 Due this week: {todos.filter(t => isThisWeek(t.dueDate) && !t.completed).length}</span>
+</div>
       {/* SEARCH BOX SECTION */}
       <div className="search-section">
         <input
@@ -263,6 +333,33 @@ function App() {
           🟢 Low
         </button>
       </div>
+      <div className="due-date-filters">
+  <span className="filter-label">Due Date: </span>
+  <button 
+    className={`date-filter-btn ${dueDateFilter === 'all' ? 'active' : ''}`}
+    onClick={() => setDueDateFilter('all')}
+  >
+    All
+  </button>
+  <button 
+    className={`date-filter-btn ${dueDateFilter === 'today' ? 'active' : ''}`}
+    onClick={() => setDueDateFilter('today')}
+  >
+    📅 Today
+  </button>
+  <button 
+    className={`date-filter-btn ${dueDateFilter === 'week' ? 'active' : ''}`}
+    onClick={() => setDueDateFilter('week')}
+  >
+    📆 This Week
+  </button>
+  <button 
+    className={`date-filter-btn overdue ${dueDateFilter === 'overdue' ? 'active' : ''}`}
+    onClick={() => setDueDateFilter('overdue')}
+  >
+    ⚠️ Overdue
+  </button>
+</div>
       {/* TODO LIST */}
       <ul className="todo-list">
         {getFilteredTodos().map((todo) => (
@@ -295,7 +392,19 @@ function App() {
                 >
                   {highlightText(todo.text, searchTerm)}
                 </span>
+<span 
+  className={`todo-text ${todo.completed ? 'completed' : ''}`}
+  onDoubleClick={() => startEditing(todo.id, todo.text)}
+>
+  {highlightText(todo.text, searchTerm)}
+</span>
 
+{/* NEW: Due date badge */}
+{todo.dueDate && (
+  <span className={`due-date-badge ${isOverdue(todo.dueDate, todo.completed) ? 'overdue' : ''}`}>
+    📅 {formatDate(todo.dueDate)}
+  </span>
+)}
                 {/* NEW: Priority Selector Dropdown */}
                 <select
                   className="priority-select"
@@ -307,6 +416,15 @@ function App() {
                   <option value="medium">🟡 Medium</option>
                   <option value="low">🟢 Low</option>
                 </select>
+                <DatePicker
+  className="due-date-picker"
+  selected={todo.dueDate}
+  onChange={(date) => updateDueDate(todo.id, date)}
+  placeholderText="Set due date"
+  dateFormat="MMM d, yyyy"
+  isClearable
+  onClick={(e) => e.stopPropagation()}
+/>
               </>
             )}
 

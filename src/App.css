@@ -379,3 +379,116 @@ mark {
   border-radius: 3px;
   color: #333;
 }
+/* Due Date Picker Styles */
+.due-date-picker {
+  padding: 6px 12px;
+  margin: 0 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 130px;
+}
+
+.due-date-picker:hover {
+  border-color: #667eea;
+}
+
+.due-date-picker:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+/* Due Date Badge */
+.due-date-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  background: #e3f2fd;
+  border-radius: 20px;
+  margin: 0 10px;
+  color: #1976d2;
+  white-space: nowrap;
+}
+
+.due-date-badge.overdue {
+  background: #ffebee;
+  color: #f44336;
+  animation: pulse 1s infinite;
+}
+
+/* Overdue pulse animation */
+@keyframes pulse {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+/* Due Date Filter Buttons */
+.due-date-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.date-filter-btn {
+  padding: 6px 12px;
+  border: 2px solid #e0e0e0;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
+.date-filter-btn:hover {
+  transform: translateY(-2px);
+}
+
+.date-filter-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.date-filter-btn.overdue.active {
+  background: #f44336;
+  border-color: #f44336;
+}
+
+/* Due Date Stats */
+.due-date-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+  background: #f0f0f0;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .due-date-picker {
+    min-width: 100px;
+    font-size: 12px;
+    margin: 5px;
+  }
+
+  .due-date-badge {
+    font-size: 10px;
+    margin: 5px;
+  }
+}
